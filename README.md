@@ -1,59 +1,65 @@
 # Local AI Server on Raspberry Pi 3B
 
-A lightweight, locally running AI chatbot server built on the **Raspberry Pi 3 Model B with just 1 GB RAM**. This project explores running small language models on low-resource hardware using [`llama.cpp`](https://github.com/ggml-org/llama.cpp) and quantised GGUF models.
+A lightweight, locally running AI chatbot powered by **Qwen2.5-0.5B-Instruct**, deployed on a Raspberry Pi 3 Model B with just 1 GB of RAM.
 
-The goal is simple: run AI locally, keep inference on-device, and minimise reliance on cloud APIs.
+This project explores running a quantised small language model on low-resource hardware using [`llama.cpp`](https://github.com/ggml-org/llama.cpp). The goal is to create a personal AI system that can generate responses locally without depending on cloud-based inference APIs.
 
 ## Features
 
-- **Local inference:** Generate responses directly on the Raspberry Pi.
-- **Low-memory operation:** Designed for a device with 1 GB of physical RAM.
-- **Quantised models:** Use compact GGUF models to reduce memory requirements.
-- **CPU-based inference:** No dedicated GPU required.
-- **Offline operation:** Chat without an internet connection after downloading the model and installing the required software.
-- **Experimentation:** Test different models, context sizes, thread counts and generation speeds.
+- **Local AI inference** — run Qwen2.5 directly on the Raspberry Pi.
+- **Low-memory deployment** — designed for a device with 1 GB of physical RAM.
+- **Quantised model** — use the GGUF format to reduce memory requirements.
+- **CPU-only execution** — no dedicated GPU required.
+- **Offline chatbot** — operate without internet access after setup and model download.
+- **Open-source inference engine** — powered by `llama.cpp`.
 
 ## Hardware
 
 | Component | Specification |
 |---|---|
 | Board | Raspberry Pi 3 Model B |
+| Processor | Broadcom BCM2837, quad-core 64-bit ARM Cortex-A53 |
 | RAM | 1 GB |
 | Storage | 8 GB microSD card |
-| Processor | Broadcom BCM2837, quad-core 64-bit ARM Cortex-A53 |
-| Accelerator | No dedicated AI accelerator |
+| AI acceleration | CPU only |
 
 ## Software Stack
 
 - **Operating system:** Raspberry Pi OS Lite
+- **Language model:** Qwen2.5-0.5B-Instruct
 - **Inference engine:** `llama.cpp`
 - **Model format:** GGUF
-- **Model quantisation:** 4-bit, such as `Q4_K_M`
-- **Interface:** Command-line chatbot; server API can be added separately
+- **Quantisation:** Q4_K_M
+- **Execution:** Local CPU inference
 
-## Model Selection
+## Model Information
 
-The project focuses on small instruction-tuned language models that can fit within the Pi's limited memory.
+**Qwen2.5-0.5B-Instruct** is a compact, instruction-tuned language model from the Qwen2.5 family.
 
-| Model | Intended use |
-|---|---|
-| SmolLM2-135M-Instruct | Experiments prioritising speed and low memory usage |
-| SmolLM2-360M-Instruct | Exploring the balance between speed and response quality |
-| Qwen2.5-0.5B-Instruct | Testing a larger compact chatbot model |
+The model has approximately 0.5 billion parameters and is intended for lightweight language-generation tasks.
 
-Model performance varies with quantisation, context length, software build and available memory. These models are experimental candidates, not guaranteed to run equally well on the hardware.
+This project uses a quantised GGUF version to reduce storage and memory requirements.
 
-## Getting Started
+Official model repository: [Qwen2.5-0.5B-Instruct-GGUF](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF)
 
-### 1. Prepare the operating system
+### Why this model?
 
-Install Raspberry Pi OS Lite using [Raspberry Pi Imager](https://www.raspberrypi.com/software/).
+- Small enough to experiment with on resource-constrained hardware.
+- Instruction-tuned for conversational interactions.
+- Supports local inference through `llama.cpp`.
+- Does not require a dedicated GPU or cloud API.
 
-A minimal installation is recommended to preserve memory and storage. Ensure the selected OS image supports your Raspberry Pi and the chosen `llama.cpp` build.
+**Hardware note:** The Raspberry Pi 3B has only 1 GB of physical RAM. Successful loading and stable operation depend on the OS, model quantisation, context size and runtime configuration. Performance is expected to be limited compared with modern computers.
+
+## Installation
+
+### 1. Install Raspberry Pi OS Lite
+
+Download [Raspberry Pi Imager](https://www.raspberrypi.com/software/) and install a compatible Raspberry Pi OS Lite image.
+
+A minimal installation is recommended to preserve available RAM and storage.
 
 ### 2. Install build dependencies
-
-Update the package lists and install the tools needed to build `llama.cpp`:
 
 ```bash
 sudo apt update
@@ -65,113 +71,113 @@ sudo apt install -y git cmake build-essential
 ```bash
 git clone https://github.com/ggml-org/llama.cpp.git
 cd llama.cpp
+
 cmake -B build
 cmake --build build --config Release -j2
 ```
 
-Building on a Raspberry Pi 3 can take time. If memory pressure causes compilation failures, reduce parallelism or compile on another compatible system and transfer the resulting binaries.
+Compilation may take some time on the Raspberry Pi 3B. If memory pressure causes the build to fail, reduce parallelism or compile on a compatible computer and transfer the binaries.
 
-### 4. Download a compatible GGUF model
+### 4. Download the model
 
-Choose a small, instruction-tuned GGUF model from a trusted model repository. Check its licence and use a quantised version appropriate for the device.
+Download a compatible **Qwen2.5-0.5B-Instruct GGUF** file from the official repository:
 
-Keep the model file on the microSD card, for example:
+[Browse available model files](https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF)
+
+Choose the `Q4_K_M` quantisation if available and compatible with your runtime.
+
+Store the model in a dedicated directory, for example:
 
 ```text
-models/
-└── model.gguf
+local-ai-server/
+└── models/
+    └── qwen2.5-0.5b-instruct-q4_k_m.gguf
 ```
 
-The filename above is a placeholder; it is not an actual downloaded model.
+The filename is an example; use the actual name of the downloaded file.
 
 ### 5. Run the chatbot
 
-From the `llama.cpp` directory, run:
+From the `llama.cpp` directory, execute:
 
 ```bash
 ./build/bin/llama-cli \
-  -m /path/to/model.gguf \
+  -m /path/to/qwen2.5-0.5b-instruct-q4_k_m.gguf \
   -t 4 \
   -c 512 \
   -n 100
 ```
 
-Replace `/path/to/model.gguf` with the actual model path.
+Replace the model path with the actual location of your downloaded file.
 
-These are initial settings for experimentation. Try different thread counts and context sizes while monitoring memory use and temperature.
+These settings are a starting point. Monitor memory consumption and test different thread counts if performance is poor.
 
-## Running an HTTP Server
+## Running a Local HTTP Server
 
-`llama.cpp` also includes an HTTP server executable, commonly built as `llama-server`.
+`llama.cpp` provides an HTTP server executable that can expose model inference through an API.
 
-For a compatible model, a basic launch command is:
+Example command:
 
 ```bash
 ./build/bin/llama-server \
-  -m /path/to/model.gguf \
+  -m /path/to/qwen2.5-0.5b-instruct-q4_k_m.gguf \
   -t 4 \
   -c 512 \
   --host 127.0.0.1 \
   --port 8080
 ```
 
-This binds the server to the local machine. To access it from another device, configure network binding and firewall rules deliberately. Do not expose an unauthenticated AI server directly to the public internet.
+This example binds the service to localhost. It can be used for local testing if the executable is available and the model loads successfully.
 
-## Performance Testing
+To allow other devices on your local network to connect, configure the listening address and firewall deliberately. Do not expose an unauthenticated server directly to the public internet.
 
-The project can be evaluated using:
+## Performance Evaluation
 
-- **Tokens per second (TPS):** Measure generation speed.
-- **Memory consumption:** Track RAM usage and swap activity.
-- **Time to first token:** Measure how long the model takes to begin responding.
-- **Response quality:** Test a consistent set of questions across models.
-- **Thermal behaviour:** Check whether sustained inference causes CPU throttling.
+The project can be evaluated using the following measurements:
 
-For repeatable performance measurements, use `llama-bench` where supported and record the model, quantisation, context size, thread count and software version.
+- **Tokens per second (TPS):** Measures text-generation speed.
+- **Time to first token:** Measures response startup latency.
+- **RAM consumption:** Measures memory used during inference.
+- **Context length:** Evaluates the effect of prompt size on memory use.
+- **Thermal behaviour:** Checks for CPU throttling during sustained workloads.
+- **Response quality:** Tests the model on a consistent set of prompts.
 
-## Hardware Constraints
+Actual benchmark results should be recorded from the Raspberry Pi rather than estimated.
 
-The Raspberry Pi 3 Model B is a low-resource platform. This project has several practical limitations:
+## Limitations
 
 - Only 1 GB of physical RAM is available.
-- Larger models may fail to load or leave insufficient memory for the operating system.
-- CPU-only inference can be slow.
-- Swap can help with memory pressure but is much slower than RAM and does not improve inference speed.
-- The 8 GB microSD card limits the space available for the OS, build dependencies and models.
-
-Small models are more practical than large general-purpose LLMs on this hardware.
-
-## Project Goals
-
-1. Run a language model locally on low-cost hardware.
-2. Measure the performance of quantised models on ARM CPUs.
-3. Explore memory-efficient inference and configuration.
-4. Compare model size, response quality and generation speed.
-5. Develop a lightweight foundation for a private, offline chatbot.
+- CPU-only inference limits generation speed.
+- Longer contexts increase memory requirements.
+- Swap memory is significantly slower than physical RAM.
+- The 8 GB microSD card restricts the space available for the OS, build tools and model files.
+- A 0.5B-parameter model has limited reasoning and factual reliability compared with larger models.
 
 ## Future Improvements
 
-- Add a simple web-based chat interface.
-- Expose a controlled local API for other applications.
-- Benchmark additional compact GGUF models.
-- Optimise startup time, memory usage and context configuration.
-- Add system monitoring for CPU temperature, RAM and TPS.
-- Explore startup automation and local-network access.
+- Add a lightweight web-based chat interface.
+- Provide a local API for other applications.
+- Benchmark tokens per second under different configurations.
+- Monitor CPU temperature, RAM usage and inference latency.
+- Automate server startup.
+- Improve local-network access controls.
 
 ## Privacy
 
-Prompts and generated responses can remain on the device when local inference is used. However, network access, telemetry, downloaded dependencies and any additional integrations should be reviewed separately to verify the privacy properties of the complete setup.
+Inference can remain entirely on the Raspberry Pi without sending prompts to a cloud AI provider. Internet access is still required for initial downloads unless the software and model are transferred to the device manually.
+
+Review additional integrations and network settings separately to ensure the complete setup meets your privacy requirements.
 
 ## Acknowledgements
 
-- [`llama.cpp`](https://github.com/ggml-org/llama.cpp) for efficient local language-model inference.
-- [Hugging Face](https://huggingface.co/models) for hosting model repositories and documentation.
-- The developers of the selected open-weight language models.
+- [`llama.cpp`](https://github.com/ggml-org/llama.cpp) — local language-model inference.
+- [Qwen](https://huggingface.co/Qwen) — Qwen2.5 model family.
+- [Hugging Face](https://huggingface.co/) — model hosting and documentation.
 
 ## Licence
 
-The licence for this project should be specified by the repository owner. Individual language models may have separate licence terms; check the selected model's licence before redistributing its files.
+This repository's licence should be specified by its owner. Check the Qwen model's licence and the licences of all bundled dependencies before redistributing them.
 
 ---
 
-**Project status:** Experimental — development and performance testing on Raspberry Pi 3 Model B with 1 GB RAM.
+**Project status:** Experimental. Focused on evaluating Qwen2.5-0.5B-Instruct on a Raspberry Pi 3 Model B with 1 GB RAM and 8 GB storage.
