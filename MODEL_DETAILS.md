@@ -27,8 +27,6 @@ https://huggingface.co/Qwen/Qwen2.5-0.5B-Instruct-GGUF
 | Physical RAM | 1 GB |
 | Storage available | 8 GB microSD card |
 
-*Note: Q4_K_M is the intended quantisation configuration. Confirm the actual downloaded model filename and quantisation metadata before treating it as the deployed version.*
-
 ## 3. Why This Model?
 
 The Raspberry Pi 3 Model B is a resource-constrained computer with a quad-core ARM Cortex-A53 processor and 1 GB of RAM.
